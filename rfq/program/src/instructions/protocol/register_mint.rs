@@ -6,7 +6,8 @@ use crate::{
     state::{protocol::MintType, BaseAssetInfo, MintInfo, ProtocolState},
 };
 use anchor_lang::prelude::*;
-use anchor_spl::token::Mint;
+use anchor_spl::token::{Mint, Token};
+use spl_token_2022::ID as TOKEN_2022_PROGRAM_ID;
 
 #[derive(Accounts)]
 pub struct RegisterMintAccounts<'info> {
@@ -23,6 +24,8 @@ pub struct RegisterMintAccounts<'info> {
     pub mint: Account<'info, Mint>,
 
     pub system_program: Program<'info, System>,
+
+    pub token_program: Program<'info, Token>,
 }
 
 pub fn register_mint_instruction(ctx: Context<RegisterMintAccounts>) -> Result<()> {
@@ -48,6 +51,8 @@ pub fn register_mint_instruction(ctx: Context<RegisterMintAccounts>) -> Result<(
         mint_address: mint.key(),
         mint_type,
         decimals: mint.decimals,
+        is_token_2022: ctx.accounts.token_program.key() == &TOKEN_2022_PROGRAM_ID,
+        token_program_id: ctx.accounts.token_program.key(),
         reserved: [0; 160],
     });
 

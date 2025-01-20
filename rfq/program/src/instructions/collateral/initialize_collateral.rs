@@ -7,6 +7,7 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token, TokenAccount};
+use spl_token_2022::ID as TOKEN_2022_PROGRAM_ID;
 
 #[derive(Accounts)]
 pub struct InitializeCollateralAccounts<'info> {
@@ -43,6 +44,8 @@ pub fn initialize_collateral_instruction(ctx: Context<InitializeCollateralAccoun
         user: user.key(),
         token_account_bump: *ctx.bumps.get("collateral_token").unwrap(),
         locked_tokens_amount: 0,
+        token_program_id: ctx.accounts.token_program.key(),
+        is_token_2022: ctx.accounts.token_program.key() == &spl_token_2022::ID,
         reserved: [0; 256],
     });
 

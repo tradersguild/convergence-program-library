@@ -106,6 +106,8 @@ pub struct QuoteAsset {
     pub settlement_type_metadata: SettlementTypeMetadata,
     pub data: Vec<u8>,
     pub decimals: u8,
+    pub is_token_2022: bool,
+    pub token_program_id: Pubkey,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]

@@ -246,8 +246,10 @@ pub enum OracleSource {
 pub struct MintInfo {
     pub bump: u8,
     pub mint_address: Pubkey,
-    pub decimals: u8,
     pub mint_type: MintType,
+    pub decimals: u8,
+    pub is_token_2022: bool,
+    pub token_program_id: Pubkey,
     pub reserved: [u8; 160],
 }
 

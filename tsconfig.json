@@ -3,7 +3,7 @@
   "compilerOptions": {
     "rootDir": ".",
     "lib": ["es2019"],
-    "types": ["mocha", "chai", "node"],
+    "types": ["mocha", "chai", "node", "@coral-xyz/anchor", "@solana/web3.js"],
   },
   "include": ["tests"]
 }

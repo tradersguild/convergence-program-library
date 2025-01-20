@@ -22,6 +22,10 @@ pub struct WithdrawCollateralAccounts<'info> {
                 bump = collateral_info.token_account_bump)]
     pub collateral_token: Account<'info, TokenAccount>,
 
+    #[account(constraint = 
+        token_program.key == &spl_token::ID || 
+        token_program.key == &spl_token_2022::ID
+    )]
     pub token_program: Program<'info, Token>,
 }
 
@@ -54,13 +58,26 @@ pub fn withdraw_collateral_instruction(
         ..
     } = ctx.accounts;
 
-    transfer_collateral_token(
-        amount,
-        collateral_token,
-        user_tokens,
-        collateral_info,
-        token_program,
-    )?;
+    let transfer_ix = if collateral_info.is_token_2022 {
+        spl_token_2022::instruction::transfer_checked(
+            token_program.key,
+            &collateral_token.key(),
+            &user_tokens.mint,
+            &user_tokens.key(),
+            &collateral_token.key(),
+            &[],
+            amount,
+            user_tokens.decimals,
+        )?
+    } else {
+        transfer_collateral_token(
+            amount,
+            collateral_token,
+            user_tokens,
+            collateral_info,
+            token_program,
+        )?
+    };
 
     Ok(())
 }

@@ -17,6 +17,7 @@ export class Mint {
   public decimals: number;
   public baseAssetIndex: number | null;
   public mintInfoAddress: PublicKey | null;
+  public isToken2022: boolean;
 
   protected constructor(protected context: Context, address: PublicKey) {
     this.publicKey = address;
@@ -51,7 +52,8 @@ export class Mint {
     return mint;
   }
 
-  public static async create(context: Context, keypair?: Keypair) {
+  public static async create(context: Context, isToken2022: boolean = false, keypair?: Keypair) {
+    const programId = isToken2022 ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
     const token = await createMint(
       context.provider.connection,
       context.dao,
@@ -122,6 +124,11 @@ export class Mint {
     if (this.mintInfoAddress === null) {
       throw new Error(`Mint ${this.publicKey.toString()} is not registered!`);
     }
+  }
+
+  public async getTransferFee(): Promise<number | null> {
+    if (!this.isToken2022) return null;
+    // Get transfer fee for Token-2022
   }
 }
 

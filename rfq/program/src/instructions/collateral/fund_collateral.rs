@@ -5,6 +5,8 @@ use crate::{
 };
 use anchor_lang::prelude::*;
 use anchor_spl::token::{transfer, Token, TokenAccount, Transfer};
+use spl_token::ID as TOKEN_PROGRAM_ID;
+use spl_token_2022::ID as TOKEN_2022_PROGRAM_ID;
 
 #[derive(Accounts)]
 pub struct FundCollateralAccounts<'info> {
@@ -21,6 +23,10 @@ pub struct FundCollateralAccounts<'info> {
                 bump = collateral_info.token_account_bump)]
     pub collateral_token: Account<'info, TokenAccount>,
 
+    #[account(constraint = 
+        token_program.key == &spl_token::ID || 
+        token_program.key == &spl_token_2022::ID
+    )]
     pub token_program: Program<'info, Token>,
 }
 
@@ -46,13 +52,26 @@ pub fn fund_collateral_instruction(
         ..
     } = ctx.accounts;
 
-    let transfer_accounts = Transfer {
-        from: user_tokens.to_account_info(),
-        to: collateral_token.to_account_info(),
-        authority: user.to_account_info(),
+    let transfer_ix = if ctx.accounts.collateral_info.is_token_2022 {
+        spl_token_2022::instruction::transfer_checked(
+            token_program.key,
+            &user_tokens.key(),
+            &collateral_token.mint,
+            &collateral_token.key(),
+            &user.key(),
+            &[],
+            amount,
+            collateral_token.decimals,
+        )?
+    } else {
+        let transfer_accounts = Transfer {
+            from: user_tokens.to_account_info(),
+            to: collateral_token.to_account_info(),
+            authority: user.to_account_info(),
+        };
+        let transfer_ctx = CpiContext::new(token_program.to_account_info(), transfer_accounts);
+        transfer(transfer_ctx, amount)?;
     };
-    let transfer_ctx = CpiContext::new(token_program.to_account_info(), transfer_accounts);
-    transfer(transfer_ctx, amount)?;
 
     Ok(())
 }
